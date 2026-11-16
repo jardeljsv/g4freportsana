@@ -1,0 +1,38 @@
+G4F REPORTS ANA 2.0.5 — OFFLINE VALIDATION
+Date: 2026-11-04
+
+Change scope
+- Administrator-owned IPS6 option includes desistencias by default.
+- Exclusion applies to confirmed unanswered caller departures with known
+  accumulated waiting below 30 seconds. Exactly 30 seconds remains included.
+- Operational calls and raw queue events remain available in the evidence.
+- Missing waiting time is not zero. If it prevents determining eligibility,
+  the queue-based indicator remains pending, with incomplete coverage.
+- External network totals require their own short-call count when excluding.
+  Queue counts are never subtracted from external totals.
+- Compatible schema-3 ANA v2 drafts retain their original values and policy;
+  owner, expiry and version restrictions remain enforced. Older v1 and
+  foreign-rule drafts remain rejected.
+
+Verification completed
+- PHP 8.3 syntax: all 78 PHP files passed; changed snapshot gate rechecked.
+- All 16 tests/ana_*_test.php suites passed.
+- New telephone-policy checks: 76.
+- New settings and external-count checks: 19.
+- New Word/Excel policy and evidence checks: 297.
+- Security/source/snapshot checks: 42, including legacy gate compatibility.
+- Native GLPI 12.0.1 class integration: 34 checks, with database/HTTP stubs.
+- GLPI 11.0.8 lifecycle checks passed.
+- Frontend checks: 14 existing, 12 report presentation, 3 configuration.
+- September fixture: existing metric values, selected populations, reopening
+  events, acceptance records and financial values match 2.0.4 under the
+  default inclusion policy. New telephone metadata is compared separately.
+- Supplied October workbook replay: 100 export-value/formula/evidence checks
+  passed against the prior ground truth, including the 465-ticket base.
+- Word exclusion and unknown-wait examples rendered in LibreOffice. The
+  changed telephone summary, IPS6 and methodology tables were visually checked.
+
+Limits
+These are offline checks, not a deployment or a live database test. No
+production GLPI/callcenter connection was opened or changed. Generated test
+documents and local test dependencies are not included in the plugin package.

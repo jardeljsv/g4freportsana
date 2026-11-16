@@ -1,0 +1,57 @@
+VALIDAÇÃO DA ENTREGA — G4F REPORTS ANA 2.0.3
+Data: 30/10/2026
+Alvo: GLPI 12.0.1; regras ANA ana-2026-10-16-v2 preservadas.
+Ambiente: PHP 8.3.6 CLI, Node/jsdom, código oficial GLPI12.0.1.
+Nenhuma conexão com produção ou implantação no servidor de destino.
+
+RESULTADOS
+- 71 arquivos PHP: sintaxe válida.
+- Nove suítes PHP principais aprovadas.
+- Metadados sem aplicação GLPI: 15 verificações aprovadas; a versão 2.0.2
+  falha no mesmo cenário por tentar resolver classes antes da inicialização.
+- Calculadora: 40 verificações; reconciliação sanitizada: 59; finanças: 54;
+  repositório/histórico/telefonia: 34; permissões/rascunhos: 34.
+- Ciclo de vida e versões: 19 verificações no GLPI12.0.1 e novamente 11.0.8.
+  Os limites 10.0.99 e 13.0.0 continuam recusados.
+- Independência das fontes: falha de credencial do callcenter mantém GLPI.
+- Exportações: 143 componentes XML válidos, 35 planilhas; regressões de
+  narrativas, finanças e cronologia telefônica aprovadas.
+- Integração com classes reais GLPI12: 34 verificações aprovadas, incluindo
+  herança, permissões, reautenticação, criptografia e locks.
+- Descoberta nativa com Composer real e autoloader legado GLPI: 12 verificações
+  aprovadas contra o ZIP final. Registro/listagem usam persistência em memória.
+- Interface: 14 verificações DOM aprovadas; arquivos de interface inalterados.
+- Verificador CLI: pacote íntegro aprovado; alteração controlada de arquivo
+  e remoção de hook.php corretamente identificadas em cópias descartáveis.
+- Manifesto SHA256 conferido contra o conteúdo do arquivo ZIP final.
+
+ESCOPO EXATO DA ALTERAÇÃO
+setup.php move quatro imports do escopo global para plugin_init_g4freportsana.
+Versões são atualizadas em setup.php, inc/common.php e src/RuntimeInfo.php.
+Foram adicionados teste de metadados, verificador CLI e documentação.
+Não há alteração em src/Ana, src/Database, src/Api, src/Export, front,
+assets, templates ou hook.php em relação à versão 2.0.2.
+
+LIMITES E CAUSALIDADE
+A dependência antecipada de classes foi reproduzida e removida. A ausência
+na lista do servidor do usuário não foi reproduzida: tanto 2.0.2 quanto 2.0.3
+são descobertas pelo scanner nativo quando seu ambiente necessário está
+presente. Os testes não equivalem a uma aplicação GLPI completa com banco,
+HTTP, caches, permissões do processo web e configuração do servidor real.
+Não se afirma que a causa observada em produção foi confirmada ou resolvida.
+
+VALIDAÇÕES HISTÓRICAS
+Os documentos VALIDATION_2.0.1.txt e VALIDATION_2.0.2.txt preservam os ensaios
+anteriores. Nenhuma nova renderização visual de Word ou GLPI foi realizada;
+os geradores e modelos continuam byte a byte iguais à versão 2.0.2.
+O esquema de 105 campos em 16 tabelas permanece auditado em GLPI12_SCHEMA_AUDIT.txt.
+
+COMO REPETIR
+Execute cada tests/ana_*_test.php separadamente com PHP CLI.
+O novo teste tests/ana_discovery_metadata_test.php não requer GLPI instalado.
+O teste de exportação aceita diretório de saída opcional e requer DOM.
+Veja tests/compatibility/README.txt para integração nativa e testes de interface.
+O teste estendido de descoberta usa o Plugin.php e autoloaders oficiais;
+seu resultado é registrado em DISCOVERY_UPDATE_2.0.3.txt. Composer e GLPI
+completo não são dependências adicionadas ao pacote de produção.
+Para conferir somente os arquivos implantados: php tools/check-package.php.

@@ -1,0 +1,12 @@
+{
+  "name": "g4f/g4freportsana",
+  "description": "ANA contractual monthly reporting for GLPI 11/12 with auditable evidence and Word/Excel exports.",
+  "type": "glpi-plugin",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "GlpiPlugin\\G4freportsana\\": "src/"
+    }
+  },
+  "require": {}
+}

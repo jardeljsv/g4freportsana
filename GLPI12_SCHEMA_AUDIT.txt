@@ -1,0 +1,82 @@
+GLPI 12.0.1 — ANA SOURCE SCHEMA COMPATIBILITY
+Review date: 2026-10-29
+Previous package: G4F Reports ANA 2.0.1
+Target shown by the supplied environment screenshot: GLPI 12.0.1
+
+RESULT
+No ANA extraction query or contractual equation required a schema change.
+All 105 GLPI fields checked by the plugin's database diagnostic exist in the
+exact official 12.0.1 installation schema, across 16 tables. The columns read
+by Repository, ActorEvidence, SelectionCatalog and SlaDataSource were reviewed
+against that schema. Required source tables, join keys and temporal types are
+compatible with the previous adapter.
+
+The source adapter identifier and descriptions now state GLPI 11/12. The
+source_manifest.schema_references list identifies the schema versions audited;
+it is not a claim that the external database's installed version was queried.
+The legacy capabilities.glpi11 field is retained for saved-JSON compatibility.
+
+CHECKED TABLES
+glpi_tickets; glpi_groups_tickets; glpi_tickets_users; glpi_groups;
+glpi_itilcategories; glpi_logs; glpi_itilsolutions; glpi_ticketsatisfactions;
+glpi_slas; glpi_slms; glpi_entities; glpi_calendars; glpi_calendarsegments;
+glpi_holidays; glpi_calendars_holidays; glpi_configs.
+
+SEMANTIC CHECKS
+- Ticket opening, creation, first-assignment, solution and closure dates remain
+  TIMESTAMP columns. SQL epoch anchors and monthly FROM_UNIXTIME boundaries
+  remain applicable; no date-conversion rewrite was introduced.
+- Ticket status values 5 (solved), 6 (closed), and assigned actor type 2 remain.
+- Search option 12 still represents ticket status. Opening, closure, solution
+  and resolution-deadline options remain 15, 16, 17 and 18.
+- Assigned Group and User history options remain 8 and 5. Log relation actions
+  15/16 still mean add/remove. old_id/new_id and original value columns remain
+  available, preserving the existing ordered history reconstruction.
+- Native takeintoaccount_delay_stat, solve_delay_stat, close_delay_stat,
+  waiting_duration and sla_waiting_duration columns remain present. They are
+  still technical reference counters; this review does not convert them into
+  confirmed contractual clocks or change the treatment of zero values.
+- Satisfaction retains satisfaction and satisfaction_scaled_to_5; the latter
+  remains FLOAT, so fractional normalized scores must remain supported.
+- Solution rows retain creation and approval timestamps, solver/approver IDs
+  and status. Existing evidence-gap handling remains necessary and unchanged.
+- SLA and calendar fields used by the plugin remain present.
+
+GLPI 12 CHANGES THAT DO NOT REQUIRE ANA RULE CHANGES
+The official OLA migration moves group-managed OLAs into glpi_items_olas and
+removes eight old OLA/internal-deadline fields from glpi_tickets. The ANA source
+adapter does not query those removed fields. Its global contractual clock is
+based on recorded assignment/lifecycle events and approved pauses; replacing
+that clock with GLPI's new per-group OLA data would change the ANA methodology.
+No such substitution was made.
+
+The knowledge-base migration changes categories/articles. The ANA monthly
+adapter does not query the changed knowledge-base tables, and no ANA IPS was
+redefined because of that platform change. The separate callcenter database
+and exact ana/ana-transbordo queues are unaffected by the GLPI schema update.
+
+PRIMARY SOURCE PROVENANCE
+Official tag: glpi-project/glpi, 12.0.1.
+Installation schema:
+https://github.com/glpi-project/glpi/blob/12.0.1/install/mysql/glpi-empty.sql
+SHA256: ceeb4c090105391ed2a83eb9a59d6b4775f3cd4872c315bbeb6530058ce490c3
+
+History and actor mapping:
+https://github.com/glpi-project/glpi/blob/12.0.1/src/CommonITILActor.php
+https://github.com/glpi-project/glpi/blob/12.0.1/src/CommonITILObject.php
+https://github.com/glpi-project/glpi/blob/12.0.1/src/Log.php
+
+Ticket, solution and SLA implementation:
+https://github.com/glpi-project/glpi/blob/12.0.1/src/Ticket.php
+https://github.com/glpi-project/glpi/blob/12.0.1/src/ITILSolution.php
+https://github.com/glpi-project/glpi/blob/12.0.1/src/SLA.php
+
+OLA migration:
+https://github.com/glpi-project/glpi/blob/12.0.1/install/migrations/update_11.0.x_to_12.0.0/ola.php
+
+LIMITS
+This is an exact-version source/schema review, with local regression tests
+reported separately. No new production extraction, schema mutation or live
+query was performed. A customized or incompletely migrated source database
+can still differ from the stock schema; the existing bounded diagnostic and
+failure handling remain in place. No optional query was added for this review.

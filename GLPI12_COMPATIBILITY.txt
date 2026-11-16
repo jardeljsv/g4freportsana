@@ -1,0 +1,89 @@
+G4F REPORTS ANA 2.0.2 — GLPI 12.0.1 COMPATIBILITY
+Review date: 2026-10-29
+Baseline: g4freportsana 2.0.1
+Baseline ZIP SHA256: 1b39029e58071b9d8d51243114a77d254c8fe23762f21ec0da4264fd84bb66a6
+
+SCOPE
+The supplied environment screenshot identifies GLPI 12.0.1. This revision
+adapts host integration to that release. It does not redefine ANA metrics.
+Metadata accepts GLPI >=11.0.0 and <13.0.0. The native GLPI maximum version
+requirement is exclusive; the manual prerequisite callback uses the same rule.
+Exact core integration was checked against the official 12.0.1 tag.
+
+REQUIRED ADAPTATIONS
+1. Security::csrfToken selects native behavior by installed GLPI version.
+   GLPI 11 continues to request/send its native token, including the AJAX
+   header that preserves concurrent token use. GLPI 12 returns no token and
+   does not call Session::getNewCSRFToken or the deprecated Twig csrf_token
+   function in the active template. Native GLPI browser-origin checks remain
+   in force. No Origin/Sec-Fetch-Site header is fabricated; no route is made
+   stateless, and no native request protection is bypassed. The existing ANA
+   session nonce and request ownership checks remain in place.
+2. GLPI 12 treats Config as a sensitive object. Native checkGlobal(READ)
+   protects configuration rendering. Administrative edits, connection tests
+   and diagnostics require both the existing UPDATE right and the native
+   Config reauthentication check. The ANA page requests native confirmation
+   only when displaying the administrative panel to an administrator.
+   Ordinary authorized report readers do not acquire administrator rights.
+3. Expired administrative AJAX requests return a JSON 403 recovery response
+   before saving or opening a test connection. The interface offers a
+   same-origin native confirmation link in a new tab, preserves local fields,
+   and waits for an explicit retry. It never creates or extends GLPI's native
+   reauthentication window. A full-page administrative request uses GLPI's
+   own redirect behavior.
+4. Release constants are 2.0.2; the active template/namespace is config_202.
+   The plugin folder, PSR-4 namespace, legacy loader aliases, hooks and
+   plugin:g4freportsana configuration context remain unchanged.
+5. Source manifest labels now identify the audited 11/12 schema adapter and
+   schema references. These labels do not claim runtime source-version
+   detection. The legacy capabilities.glpi11 key remains for JSON consumers.
+
+PRESERVED BEHAVIOR
+- ANA rules version remains ana-2026-10-16-v2.
+- Exact queues ana and ana-transbordo; same independent callcenter database.
+- All equations, thresholds, contractual clocks, responsibility/reopening
+  logic, finance rules, audit registers and read-only extraction protections.
+- Repository SQL is unchanged. Its modifications are explanatory metadata.
+  SlaDataSource changes only a comment. The 105 diagnostic fields across
+  16 GLPI tables exist in the exact 12.0.1 schema; see GLPI12_SCHEMA_AUDIT.txt.
+- DOCX/XLSX generation, report templates and original professional-report
+  service/API implementation remain unchanged. The professional report page
+  uses the shared version-aware token helper.
+- Existing native secured_configs encryption, password preservation and
+  DBmysql named locks remain compatible. No credential migration is needed.
+- GLPI's legacy plugin routing and /apirest.php API still exist. Bootstrap
+  retains the already-booted-runtime path; no obsolete include rewrite or
+  forced alternate routing is introduced.
+- Inactive legacy configuration templates remain historical source files;
+  RuntimeInfo and Config select config_202 explicitly.
+
+UPDATE
+Deactivate the ANA plugin, replace its g4freportsana directory with this
+package and update/reactivate using GLPI plugin administration. Do not
+uninstall or overwrite the independent g4freports plugin. An update preserves
+ANA settings and credentials. No database schema migration is introduced.
+No extra production extraction is required to apply this compatibility patch.
+Existing source diagnostic checks remain available in the configuration UI.
+
+VALIDATION AND LIMITS
+See VALIDATION.txt for the checks executed for this release. Optional native
+integration and DOM tests are included under tests/compatibility for local
+reproduction; GLPI source and jsdom are test inputs, not plugin dependencies.
+No installation, live HTTP session, database query, load test or production
+credential validation was performed against the destination server. Passing
+source/schema and offline integration checks does not claim a live deployment.
+
+PRIMARY REFERENCES
+Exact official release source:
+https://github.com/glpi-project/glpi/tree/12.0.1
+Relevant paths: src/Plugin.php; src/Session.php; src/CommonGLPI.php;
+src/CommonDBTM.php; src/Config.php; src/DBmysql.php; src/GLPIKey.php;
+src/Glpi/Kernel/Listener/ControllerListener/CheckCsrfListener.php;
+src/Glpi/Kernel/Listener/RequestListener/LegacyRouterListener.php;
+src/Glpi/Controller/LegacyFileLoadController.php;
+src/Glpi/Controller/ApiRestController.php;
+src/Glpi/Security/ReAuth/ReAuthManager.php.
+Native reauthentication documentation:
+https://glpi-developer-documentation.readthedocs.io/en/master/devapi/reauthentication.html
+Historical 2.0.1 review remains in COMPATIBILITY_AUDIT.txt and
+VALIDATION_2.0.1.txt; those files describe previous checks, not new live tests.

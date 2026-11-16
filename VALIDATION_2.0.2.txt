@@ -1,0 +1,78 @@
+VALIDAÇÃO DA ENTREGA — G4F REPORTS ANA 2.0.2
+Data: 29/10/2026
+Alvo da revisão: GLPI 12.0.1
+Regras preservadas: ana-2026-10-16-v2
+Ambiente de teste: PHP 8.3.6 CLI e Node/jsdom; execução offline.
+Nenhuma instalação, consulta ou conexão no ambiente de produção.
+
+RESULTADOS DESTA REVISÃO
+- 69 arquivos PHP: sintaxe válida.
+- Oito suítes PHP principais: aprovadas.
+- Calculadora: 40 verificações de fronteira.
+- Reconciliação das extrações sanitizadas fornecidas: 59 verificações.
+- Finanças e evidências: 54 verificações.
+- Repositório, histórico e telefonia: 34 verificações.
+- Permissões, configurações e rascunhos: 34 verificações.
+- Independência das fontes: falha de credencial do callcenter não interrompe
+  GLPI e não inicia conexão telefônica; diagnóstico continua sanitizado.
+- Estrutura: 19 verificações em 12.0.1 e novamente em 11.0.8, incluindo
+  ciclo de instalação/atualização, isolamento e seleção de tokens por versão.
+  GLPI 10.0.99 e 13.0.0 são recusados, com quatro verificações cada.
+- Exportações: 143 componentes XML válidos, 35 planilhas; regressões de
+  narrativas, composição financeira e eventos telefônicos aprovadas.
+- Integração com classes reais, sem modificar o código oficial 12.0.1:
+  34 verificações aprovadas. Herança Config/Menu, bootstrap, permissões,
+  confirmação de identidade, token obsoleto evitado, Config/GLPIKey com
+  criptografia nativa, preservação de senha e bloqueio nativo DBmysql.
+  Senhas de teste incluem zero literal, espaços e Unicode.
+- Interface: 14 regressões DOM aprovadas, cobrindo análise sintática dos
+  três scripts, tokens GLPI11, ausência de tokens no GLPI12, concorrência,
+  recuperação após confirmação expirada, campos em edição preservados,
+  rejeição de links externos e descarte de respostas obsoletas.
+- Esquema oficial exato 12.0.1: todos os 105 campos de diagnóstico existem
+  nas 16 tabelas. Históricos, estados, atores, SLA e tipos temporais revisados.
+
+COMPARAÇÃO COM A VERSÃO 2.0.1
+A comparação byte a byte confirmou que todos os arquivos src/Ana, exceto
+Repository.php e SlaDataSource.php, permanecem idênticos. As alterações
+nesses dois arquivos são rótulos/metadados de versão e um comentário;
+as consultas e a lógica não mudaram. Todos os arquivos src/Database e
+src/Api, os geradores de exportação, o papel timbrado e os testes de
+cálculo/financeiro/evidências originais permanecem idênticos.
+
+O diretório, namespace, contexto de configuração e hooks permanecem
+compatíveis. A atualização preserva valores administrativos e senhas;
+não cria tabelas nem introduz migração de dados ou dependência Composer.
+As filas permanecem ana e ana-transbordo, com correspondência exata.
+
+PROVENIÊNCIA
+A referência sanitizada mantém os rótulos históricos originais das extrações
+fornecidas. Não foi relabelada como uma nova extração GLPI12. O alvo atual
+12.0.1 vem da captura de tela fornecida, e a verificação de compatibilidade
+usa o código/esquema oficiais desse tag, sem consultar o servidor real.
+
+LIMITE DOS TESTES
+O teste nativo executa classes reais e substitui apenas dependências externas
+e transporte/persistência por fixtures locais; não inicializa o kernel GLPI
+completo. Não testa login real, roteamento do servidor web, consultas reais,
+API remota, volume de produção nem plano de execução. Os testes de interface
+usam DOM e fetch simulado, não navegação em GLPI instalado.
+
+As exportações desta revisão foram verificadas estruturalmente. Como seus
+geradores e modelo não mudaram, a renderização visual documentada na versão
+2.0.1 permanece histórica; não se afirma nova inspeção visual em Word/GLPI.
+Validação offline não equivale a implantação ou aprovação contratual.
+
+COMO REPETIR
+Execute cada tests/ana_*_test.php com PHP CLI, em processos separados.
+O teste de exportações aceita um diretório de saída opcional e requer DOM.
+Consulte tests/compatibility/README.txt para os testes adicionais de classes
+nativas e interface. Eles não exigem acesso à produção.
+
+DOCUMENTOS
+GLPI12_COMPATIBILITY.txt: alterações necessárias, comportamento preservado,
+atualização e fontes oficiais.
+GLPI12_SCHEMA_AUDIT.txt: campos, semântica, mudanças de plataforma e limites.
+VALIDATION_2.0.1.txt e COMPATIBILITY_AUDIT.txt: registros históricos da versão
+anterior, preservados sem apresentá-los como novas execuções.
+SHA256SUMS.txt: integridade dos arquivos desta entrega, exceto o manifesto.

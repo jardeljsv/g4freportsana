@@ -1,0 +1,20 @@
+<root>
+  <name>Relatórios G4F — ANA</name>
+  <key>g4freportsana</key>
+  <state>dev</state>
+  <description>
+    <short>
+      <en>GLPI activity reports and ANA monthly service-level reports with Word and Excel export.</en>
+      <pt_BR>Relatórios de atividades GLPI e relatório mensal ANA com exportação Word e Excel.</pt_BR>
+    </short>
+    <long>
+      <en>Builds activity report drafts from GLPI API contexts. The ANA monthly module uses dedicated GLPI/MariaDB and Asterisk/MySQL connections, saved test-call exclusions and shared calculations for Word and Excel reports.</en>
+      <pt_BR>Gera relatórios de atividades a partir da API GLPI. O módulo mensal ANA usa conexões dedicadas GLPI/MariaDB e Asterisk/MySQL, exclusão de números de teste e uma apuração comum às exportações Word e Excel.</pt_BR>
+    </long>
+  </description>
+  <langs>
+    <lang>en_US</lang>
+    <lang>pt_BR</lang>
+  </langs>
+  <license>MIT</license>
+</root>

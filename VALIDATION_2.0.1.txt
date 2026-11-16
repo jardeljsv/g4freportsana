@@ -1,0 +1,50 @@
+VALIDAÇÃO DA ENTREGA — G4F REPORTS ANA 2.0.1
+Data: 16/10/2026
+Regras: ana-2026-10-16-v2
+Ambiente de teste: PHP 8.3 CLI, testes offline; nenhuma conexão de produção.
+
+RESULTADOS
+- 68 arquivos PHP: sintaxe válida.
+- Oito suítes PHP: aprovadas.
+- Calculadora: 40 verificações de fronteira.
+- Reconciliação das extrações reais sanitizadas: 59 verificações.
+- Finanças e evidências: 54 verificações.
+- Repositório, histórico e telefonia: 34 verificações.
+- Permissões, configurações e rascunhos: 34 verificações.
+- Independência das fontes: falha de credencial do callcenter não interrompe GLPI.
+- Exportações: 143 componentes XML válidos; base mensal substituída e base ausente preservadas.
+- Interface: 19 verificações DOM com a referência real de 514 chamados; mais 28 verificações de CSRF, requisições concorrentes e respostas obsoletas.
+- Estrutura do plugin: 16 verificações offline de hooks, autoload, template, versão, instalação idempotente e isolamento da desinstalação.
+- Coexistência: original e ANA carregados no mesmo processo PHP, com configurações separadas e preservação da senha existente durante atualização.
+- CSRF: código nativo Session do GLPI 11 confirmou reutilização do token AJAX, consumo na submissão normal e rejeição de repetição após consumo.
+- Comparação dos relatórios por profissional: 13 arquivos idênticos após renomeação de isolamento; quatro modelos DOCX produziram binários idênticos.
+- Integração API offline: finanças compostas antes do armazenamento; apenas a competência selecionada incluída; entidade/equipes da configuração administrativa.
+- Consultas: 12 SELECTs capturados sem conexão de rede; 96 colunas GLPI distintas verificadas contra os metadados fornecidos e o esquema exato 11.0.8. Diagnóstico com 105 campos em 16 tabelas, sem lacuna em campos consultados. glpi_slms foi confirmada pelo esquema de referência, pois não constava da extração limitada de metadados.
+
+REFERÊNCIA REPRODUZIDA
+- Seleções alternativas: 514 / 543 / 577 chamados conforme critério explicitado.
+- Satisfação: 312 / 64 = 4,875, exibida como 4,88 em escala de 1 a 5.
+- TIT nativo: 489 / 514 = 95,136186770428%.
+- Reaberturas: sete chamados distintos, dez eventos.
+- Sete tempos nativos zero preservados; seis chamados sem grupo atual permanecem em revisão quando não há histórico suficiente.
+- Prioridades do relatório de referência usadas apenas no cenário de comparação, sem fixação dessa distribuição em produção.
+
+EXPORTAÇÕES
+Word: 19 páginas do cenário de revisão com dados sanitizados, narrativas preenchidas e ajuste financeiro de teste renderizadas e inspecionadas; todas as páginas conferidas. Gráficos nativos, tabelas, fonte vermelha abaixo da meta e papel timbrado G4F preservados. Regressão financeira: base fictícia 1.000, glosa 10, ajuste +100 e líquido 1.090, com referências de aprovação/TRS. Os valores desse cenário são apenas dados de teste.
+Excel: 35 planilhas e sete gráficos; memória de cálculo, bases e classificações preservadas. A nova base Eventos telefonicos preserva a cronologia bruta; regressão verificou nove eventos, exclusões de teste, contexto sem duplicação, campos originais e distinção entre competência da passagem e do evento. Narrativas iniciais, sobrepostas e atualizadas conferidas por conteúdo. Na validação anterior das fórmulas, mantidas nesta revisão, alterar os 64 operandos válidos para nota 3, em cópia descartável, recalculou IPS1, resumo e dados do gráfico para 3,0 no LibreOffice, sem erros de fórmula. A comparação matemática mudou; a validação original permaneceu identificada. Essa alteração não reexecuta os critérios contratuais do PHP.
+
+LIMITES DA VERIFICAÇÃO
+Não houve instalação no GLPI de destino nem conexão real GLPI/callcenter. Os testes SQL verificam esquema, construção e limites; não equivalem a plano de execução ou ensaio de carga no servidor. Os eventos de telefonia foram testados com casos controlados. A interface foi testada por DOM; o navegador de testes não ficou disponível, portanto não se afirma revisão visual da interface dentro do GLPI. O Word foi renderizado com LibreOffice, sem execução do Microsoft Word. Validação offline não constitui aprovação da fiscalização nem fechamento financeiro da competência.
+
+INTEGRIDADE
+A origem G4F Reports 1.8.19 manteve seus 123 arquivos byte a byte.
+SHA256 do ZIP de origem:
+967a184d2d61bbe4a9e26be8e32bb1a38da4377d3bc920cc2accd0a2e8d82d8c
+O pacote ANA possui namespace, configuração, sessões e diretório independentes.
+SHA256SUMS.txt contém os hashes dos arquivos desta entrega, exceto o próprio manifesto.
+
+REVISÃO DE COMPATIBILIDADE
+COMPATIBILITY_AUDIT.txt documenta os problemas corrigidos e as mudanças além das regras ANA. A revisão de regras v2 impede exportar rascunhos antigos; gere novamente a competência após atualizar. O nome e namespace do plugin permanecem g4freportsana.
+
+COMO REPETIR
+Com PHP CLI, execute cada tests/ana_*_test.php em processo separado. O teste de exportações aceita um diretório de saída como argumento. Os testes são bloqueados fora do CLI e não precisam ser executados no servidor de produção.

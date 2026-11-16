@@ -1,0 +1,81 @@
+G4F REPORTS ANA 2.0.3 — DISCOVERY / INITIALIZATION REVIEW
+Date: 2026-10-30
+Target: GLPI 12.0.1; GLPI 11 support retained.
+Baseline ZIP SHA256:
+a5b7b774f5661c14c70f30042acb20fa57dd5a4de2668ecbe1b733a1b6d1ed9b
+
+OBSERVED USER ISSUE
+The plugin remains absent from the classic plugin list after the user confirms
+its directory and ownership. The server's actual runtime state was not made
+available in this review, and no production connection was attempted.
+
+CONFIRMED CODE WEAKNESS AND CHANGE
+Version 2.0.2 eagerly included autoload.php, common.php, menu.class.php and
+config.class.php at the top of setup.php. Reading metadata therefore loaded
+application helpers, registered a fallback/optional Composer loader, and
+resolved Config/Menu inheritance before plugin initialization.
+
+GLPI reads setup.php to obtain plugin metadata. In the native load path,
+loadPluginSetupFile precedes registerPluginAutoloader and the init callback.
+Version 2.0.3 keeps only constants and callback declarations at file scope;
+all four runtime imports now run inside plugin_init_g4freportsana().
+Errors in application initialization are no longer prerequisites for merely
+reading this plugin's metadata. Initialization errors are not swallowed; they
+remain subject to GLPI's native handling.
+
+REPRODUCIBLE EVIDENCE
+The new isolated metadata test supplies no GLPI classes, stubs or database.
+Version 2.0.2 fails because its eager imports attempt to resolve CommonGLPI.
+Version 2.0.3 passes 15 checks, including zero class-autoload attempts, no
+runtime class declarations, no helper imports, and no session/hook changes.
+
+The previous discovery test substituted Composer's loader and omitted GLPI's
+legacy autoloader. The strengthened check uses the real Composer 2.8.12 loader
+and the unchanged GLPI 12.0.1 legacy loader and Plugin class. Both versions
+pass normal native discovery with the host runtime available. Version 2.0.3
+passes metadata scanning, registration as NOTINSTALLED in an in-memory DB,
+listing, initialization and installation-hook loading.
+
+These two results are intentionally distinguished: the early dependency is
+proven and removed, but it is not proven to be the cause of the live absence.
+The tests do not claim an otherwise-required manifest, XML registration file,
+new directory name or different contractual code is missing.
+
+PRESERVED
+- Directory g4freportsana, metadata/init/install callbacks, PSR-4 namespace,
+  legacy aliases, menu registration and configuration context.
+- Native install/update/uninstall behavior and credential preservation.
+- GLPI12 request security and administrator identity confirmation.
+- ANA rules ana-2026-10-16-v2, all queries, queues ana/ana-transbordo,
+  financial calculations, history, interfaces and report exporters.
+- Configuration template config_202: no new template copy is needed.
+- No database schema change, new production dependency or automatic repair.
+
+OPTIONAL LOCAL CHECK
+From the g4freportsana directory:
+  php tools/check-package.php
+
+The CLI-only checker reads metadata without booting GLPI and compares package
+files with SHA256SUMS.txt. It reports metadata version, the inspected directory,
+autoload attempts, missing/unreadable files and changed files. Exit 0 means
+these local checks passed; exit 1 indicates a package inspection failure.
+It does not query a database, open a network connection, write files, change
+permissions, enable plugins, clear caches or modify the GLPI registry.
+It also does not prove that the web process sees this copy or that GLPI's
+configured plugin paths/database state allow discovery. Those are explicit
+limits, not assumed facts about the destination server.
+
+UPDATE
+Replace the contents of the existing g4freportsana plugin directory with
+this package. Preserve its name and settings; do not uninstall. If GLPI lists
+an update action, apply it and reactivate normally. No configuration or
+report regeneration is required solely for this startup change.
+
+PRIMARY REFERENCES
+Exact GLPI12.0.1 Plugin source, load/loadPluginSetupFile/checkStates:
+https://github.com/glpi-project/glpi/blob/12.0.1/src/Plugin.php
+Legacy loader:
+https://github.com/glpi-project/glpi/blob/12.0.1/src/autoload/legacy-autoloader.php
+Official plugin setup requirements and initialization example:
+https://glpi-developer-documentation.readthedocs.io/en/master/plugins/requirements.html
+https://github.com/pluginsGLPI/example/blob/main/setup.php

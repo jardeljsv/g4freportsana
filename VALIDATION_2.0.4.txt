@@ -1,0 +1,31 @@
+G4F Reports ANA 2.0.4
+Validação local em 04/11/2026
+
+Escopo da atualização
+- Correção do total de pontos indisponível no Excel e da evidência de numerador por prioridade.
+- Apresentação separada de aceite de soluções e ausência de registro de solução.
+- Remoção de textos internos, conteúdo de modelo vazio e repetição nas exportações.
+- Simplificação da interface e alinhamento do mapa temporal ao recorte selecionado.
+- Identificação temporal por metadados nativos e leitura de datas de calendário em campos de texto.
+- Fuso opcional com padrão America/Sao_Paulo.
+
+Verificações
+- Sintaxe de todos os arquivos PHP do pacote.
+- Suíte de cálculos, evidências, financeiro, segurança, repositório, isolamento de fontes e estrutura do plugin.
+- Paridade com 2.0.3: valores e estados dos indicadores, populações, eventos de reabertura e valores financeiros preservados.
+- 78 verificações de leitura temporal, limites de competência, tipos aceitos, formato inválido e configuração opcional.
+- Integração com as classes nativas do GLPI 12.0.1; 34 verificações sem conexão com banco.
+- Ciclo de instalação/atualização com configurações existentes; GLPI 11.0.8 e 12.0.1.
+- Interface: 14 verificações de segurança/estado e 8 verificações de apresentação, registros e mapa temporal.
+- Documentos Word e Excel com XML válido, narrativas, referências financeiras e cronologia telefônica preservadas.
+- Reprodução local de outubro a partir dos arquivos fornecidos: 465 chamados, 9 reaberturas, IPS5 451/460 e IPS1 191/41 mantidos; 100 verificações por cenário de exportação.
+- Recálculo em LibreOffice Calc: o total financeiro indisponível permanece vazio; os oito resultados numéricos do arquivo de outubro permanecem iguais.
+- Inspeção visual de todas as páginas dos relatórios Word de setembro e outubro; timbrado e aprovação preservados.
+- Descoberta do arquivo ZIP pelo carregador nativo e conferência SHA-256 de todos os arquivos.
+
+Limites da validação
+Nenhuma conexão ou consulta foi executada no ambiente de produção. A telefonia foi verificada com casos locais de TIMESTAMP, DATETIME e datas canônicas em VARCHAR/CHAR. Formatos numéricos sem representação documentada permanecem rejeitados.
+
+Os registros, índices, aprovações, dados e regras de negócio não são alterados por esta atualização. A apresentação revisada também é aplicada à reexportação de medições salvas, mantendo seus valores. A obtenção de novos dados telefônicos requer uma nova extração.
+
+As bases reais de outubro e os arquivos temporários de validação não integram o pacote.

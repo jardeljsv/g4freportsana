@@ -1,0 +1,125 @@
+G4F REPORTS ANA — COMPATIBILITY REVIEW AGAINST THE WORKING PLUGIN
+Review date: 2026-10-16
+Baseline: G4F Reports 1.8.19, supplied working archive.
+Reviewed release: ANA 2.0.0; corrections delivered as ANA 2.0.1.
+
+CONCLUSION
+The ANA fork was a broader adaptation than a formula-only patch. Its original
+GLPI plugin framework and professional/activity report logic were retained,
+but monthly data acquisition, calculations, administration and report outputs
+were substantially adapted. The review found real defects in the new module
+and corrected them. No replacement of the plugin framework is needed.
+
+The original 123 baseline files remain untouched. The delivered 2.0.0 ZIP and
+the source inspected at the start of this review were byte-for-byte equal.
+The corrected release does not change the original g4freports installation.
+
+GLPI STRUCTURE AND LIFECYCLE
+- Plugin directory/key: g4freportsana, an alphanumeric name.
+- Required entry files setup.php and hook.php are present.
+- Discovery, initialization, prerequisite, install and uninstall callback names
+  agree with that plugin key.
+- GlpiPlugin\G4freportsana\ classes map to src/ with the correct case.
+- Existing inc/ compatibility classes and the fallback autoloader are retained.
+  Their presence is inherited and not a reason to redesign the working loader.
+- Menu and configuration-tab registration retain the original GLPI pattern.
+- GLPI 11 resolves plugin web resources through /plugins/, including when the
+  plugin's physical directory is under marketplace.
+- Configuration, PHP classes, session keys and temporary report paths are
+  isolated from g4freports. Both namespaces load together in the offline test.
+- Installation adds absent ANA defaults, preserves existing configuration and
+  encrypted passwords, and creates no reporting tables or scheduled jobs.
+- ANA uninstall removes its configuration context and leaves the original
+  plugin context unchanged. Temporary reports retain their inherited expiry.
+- No new Composer installation, PHPWord or ZipArchive dependency was added.
+  Existing GLPI 11 extensions cover production code. DOM-based checks are tests.
+
+PRESERVED FUNCTIONALITY
+Thirteen professional-report core files are identical after only the required
+plugin/class/function isolation renames: the API client, API exception, search
+option resolver, draft builder, professional DOCX exporter, three utility
+classes, API/export/diagnostic entry points, and report/diagnostic JavaScript.
+The professional report page only changes its contract-module links and labels.
+
+All four professional DOCX templates generated identical binary files for the
+same offline draft in the original and ANA implementations: operational,
+formal_managerial, project_technical and annex_full. This validates dispatch,
+template and resource preservation; it is not a live REST connectivity test.
+The G4F artwork and letterhead template are unchanged.
+
+WHY OTHER CHANGES EXIST
+Required ANA adaptations:
+- Ten ANA IPS, priority-specific results and ANA financial rules.
+- Exact ana and ana-transbordo queue selection and separate queue/interaction
+  evidence; no automatic merging of unrelated call identifiers.
+- Verified GLPI 11 fields and historical group/solution/reopening evidence.
+- Removal of SES staff-rate/headcount billing and same-agent reopening relief.
+- ANA procedures, evidence registers, financial settings and report content.
+
+Changes beyond formulas, deliberately retained:
+- Independent plugin identity prevents interference with the working plugin.
+- Empty access allowlists deny nonadministrators. The baseline allowed logged-in
+  users; this is a real shared permission change, documented in installation.
+- Session group parsing reads group values, not numeric array indexes. The
+  exact GLPI 11 Session implementation uses a list of IDs; the original parser
+  could incorrectly treat list indexes as membership IDs.
+- UTC source sessions and a mandatory three-second server query limit support
+  the production-only extraction requirement. Existing dedicated mysqli,
+  read-only transactions, password encryption and snapshot ownership remain.
+- Credential connection tests use POST bodies rather than GET query strings.
+- New administration validates evidence and preserves provisional results when
+  source data or approvals are insufficient.
+- Version-specific configuration templates avoid GLPI production Twig caches
+  retaining an earlier configuration screen after an update.
+
+There is no unrelated migration to a different GLPI routing framework, no new
+framework dependency, and no change to the preserved professional extraction
+or report builder. Three inactive older configuration templates are inherited
+package residue; the active version is explicitly selected. Their removal was
+not needed to repair compatibility.
+
+CORRECTIONS IN 2.0.1
+1. Concurrent asynchronous requests used a shared one-use form CSRF token.
+   The second operation could fail in native GLPI protection. Requests now use
+   GLPI 11's native AJAX headers and preserve-token path, retaining body tokens
+   and keeping credentials out of URLs. No security check is bypassed.
+2. A month or methodology change while extraction was outstanding could allow
+   the old response to enable exports. Stale responses are now rejected rather
+   than associated with the newly selected inputs.
+3. Word used different keys from the form for six procedure narratives. Saved
+   monthly topics and report-specific notes now share a resolver in both Word
+   and Excel; explicit report text takes precedence, with monthly text fallback.
+   Telephone follow-up text is included without inventing a new survey metric.
+4. Valid DATETIME fractional seconds could disable telephone extraction.
+   Parsing now accepts zero to six fractional digits, validates the date, keeps
+   the source timestamp and uses the existing whole-second measurement clock.
+5. Word's financial summary omitted adjustments that were included in the net
+   amount. The revised financial presentation exposes the adjustment basis.
+6. The history capability summary now follows the actual history availability
+   flag instead of reporting complete availability unconditionally.
+7. Excel now preserves the raw telephone event chronology and identifies
+   context-only queue legs and excluded calls, making the recorded events
+   available for reconciliation beyond the aggregate call-duration values.
+8. The call calculator expected scalar test numbers while settings supplied
+   structured records. Active saved test numbers are now applied correctly;
+   inactive records do not exclude calls. Rule revision ana-2026-10-16-v2
+   requires reports to be regenerated so old snapshots cannot retain this bug.
+
+VALIDATION BOUNDARY
+See VALIDATION.txt for the completed checks for this release. Tests use the
+supplied sanitized extracts, local fixtures, exact GLPI 11 source where noted,
+and simulated runtime boundaries. No production database, REST endpoint,
+installation, web server or proxy was accessed. Actual query speed and the
+callcenter server's timeout support remain deployment-specific. A source
+review cannot certify a production installation that has not been exercised.
+No additional extraction is required for the corrections documented here.
+
+PRIMARY GLPI REFERENCES
+Official requirements and plugin structure:
+https://glpi-developer-documentation.readthedocs.io/en/master/plugins/requirements.html
+https://glpi-developer-documentation.readthedocs.io/en/master/plugins/guidelines.html
+Exact GLPI 11.0.8 Plugin.php and Session.php, and CheckCsrfListener.php, retained
+locally from the earlier schema/integration verification, were used for the
+version-specific callback, routing, group-list and token lifecycle checks.
+Current documentation can also describe GLPI 12; those newer behaviors were
+not substituted for GLPI 11's CSRF-token requirements.
