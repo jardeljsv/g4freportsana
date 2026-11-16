@@ -1,0 +1,112 @@
+{% set database_connections = [
+  {'key': 'ana', 'source': 'glpi', 'prefix': 'ana_db_', 'title': 'GLPI / MariaDB — Relatório mensal ANA', 'description': 'Conexão direta ao banco GLPI destinada ao relatório mensal ANA.', 'port': 3306, 'database': '', 'example': 'jdbc:mariadb://servidor:3306/glpi'},
+  {'key': 'callcenter', 'source': 'callcenter', 'prefix': 'callcenter_db_', 'title': 'Callcenter / MySQL — Telefonia', 'description': 'Conexão ao banco Asterisk para consultar as chamadas do relatório mensal ANA.', 'port': 2210, 'database': 'ipbx', 'example': 'jdbc:mysql://servidor:2210/ipbx'}
+] %}
+
+{% for connection in database_connections %}
+  {% set prefix = connection.prefix %}
+  {% set password_set = db_password_set[connection.key]|default(false) %}
+  <div class="g4fr-section g4fr-database-connection" data-db-source="{{ connection.source }}" data-db-prefix="{{ prefix }}" data-db-editable="{{ disabled ? '0' : '1' }}">
+    <h4>{{ connection.title }}</h4>
+    <div class="g4fr-muted mb-3">{{ connection.description }} A conexão é realizada pelo servidor do GLPI. Utilize uma conta com permissão de leitura.</div>
+
+    <details class="g4fr-advanced mb-3">
+      <summary>Preencher endereço a partir da conexão do DBeaver</summary>
+      <label for="g4fra_{{ prefix }}jdbc" class="form-label mt-2">Endereço JDBC, sem usuário ou senha</label>
+      <div class="g4fr-actions">
+        <input type="text" id="g4fra_{{ prefix }}jdbc" class="form-control g4fr-mono" data-db-jdbc autocomplete="off" spellcheck="false" placeholder="{{ connection.example }}" {{ disabled ? 'disabled' : '' }}>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-db-apply {{ disabled ? 'disabled' : '' }}>Preencher campos</button>
+      </div>
+      <div class="form-text">Preenche somente servidor, porta e banco de dados. Depois, salve as configurações.</div>
+      <div class="form-text" data-db-jdbc-message role="status" aria-live="polite"></div>
+    </details>
+
+    <div class="g4fr-grid-4">
+      <div>
+        <label for="g4fra_{{ prefix }}enabled" class="form-label">Habilitar conexão</label>
+        <select name="{{ prefix }}enabled" id="g4fra_{{ prefix }}enabled" class="form-select" {{ disabled ? 'disabled' : '' }}>
+          <option value="0" {{ cfg[prefix ~ 'enabled']|default(0) == 0 ? 'selected' : '' }}>Não</option>
+          <option value="1" {{ cfg[prefix ~ 'enabled']|default(0) == 1 ? 'selected' : '' }}>Sim</option>
+        </select>
+      </div>
+      <div>
+        <label for="g4fra_{{ prefix }}host" class="form-label">Servidor</label>
+        <input type="text" name="{{ prefix }}host" id="g4fra_{{ prefix }}host" value="{{ cfg[prefix ~ 'host']|default('') }}" class="form-control" maxlength="253" autocomplete="off" spellcheck="false" placeholder="Nome ou IP do servidor" {{ disabled ? 'disabled' : '' }}>
+      </div>
+      <div>
+        <label for="g4fra_{{ prefix }}port" class="form-label">Porta</label>
+        <input type="number" name="{{ prefix }}port" id="g4fra_{{ prefix }}port" value="{{ cfg[prefix ~ 'port']|default(connection.port) }}" class="form-control" min="1" max="65535" step="1" {{ disabled ? 'disabled' : '' }}>
+      </div>
+      <div>
+        <label for="g4fra_{{ prefix }}name" class="form-label">Banco de dados</label>
+        <input type="text" name="{{ prefix }}name" id="g4fra_{{ prefix }}name" value="{{ cfg[prefix ~ 'name']|default(connection.database) }}" class="form-control" maxlength="64" autocomplete="off" spellcheck="false" {{ disabled ? 'disabled' : '' }}>
+      </div>
+    </div>
+
+    <div class="g4fr-grid-3 mt-3">
+      <div>
+        <label for="g4fra_{{ prefix }}user" class="form-label">Usuário do banco</label>
+        <input type="text" name="{{ prefix }}user" id="g4fra_{{ prefix }}user" value="{{ cfg[prefix ~ 'user']|default('') }}" class="form-control" maxlength="128" autocomplete="off" spellcheck="false" {{ disabled ? 'disabled' : '' }}>
+      </div>
+      <div>
+        <label for="g4fra_{{ prefix }}password" class="form-label">Senha</label>
+        <input type="password" name="{{ prefix }}password" id="g4fra_{{ prefix }}password" value="" class="form-control" autocomplete="new-password" aria-describedby="g4fra_{{ prefix }}password_help" {{ disabled ? 'disabled' : '' }}>
+        <div id="g4fra_{{ prefix }}password_help" class="form-text">{{ password_set ? 'Senha armazenada. Deixe em branco para manter; preencha para substituir.' : 'Informe a senha ou configure uma variável de ambiente nas opções avançadas.' }}</div>
+        {% if password_set %}
+          <label class="form-check mt-2">
+            <input type="checkbox" name="{{ prefix }}clear_password" value="1" class="form-check-input" {{ disabled ? 'disabled' : '' }}>
+            <span class="form-check-label">Remover a senha armazenada ao salvar</span>
+          </label>
+        {% endif %}
+      </div>
+      <div>
+        <label for="g4fra_{{ prefix }}tls_mode" class="form-label">Proteção da conexão</label>
+        <select name="{{ prefix }}tls_mode" id="g4fra_{{ prefix }}tls_mode" class="form-select" {{ disabled ? 'disabled' : '' }}>
+          <option value="disabled" {{ cfg[prefix ~ 'tls_mode']|default('disabled') == 'disabled' ? 'selected' : '' }}>Sem TLS</option>
+          <option value="verify" {{ cfg[prefix ~ 'tls_mode']|default('disabled') == 'verify' ? 'selected' : '' }}>TLS com verificação de certificado</option>
+        </select>
+      </div>
+    </div>
+
+    <details class="g4fr-advanced mt-3">
+      <summary>Opções avançadas da conexão</summary>
+      <div class="g4fr-grid-2 mt-3">
+        {% if connection.source == 'callcenter' %}
+        <div>
+          <label for="g4fra_callcenter_db_timezone" class="form-label">Fuso do PABX (opcional)</label>
+          <input type="text" name="callcenter_db_timezone" id="g4fra_callcenter_db_timezone" value="{{ cfg['callcenter_db_timezone']|default('America/Sao_Paulo') }}" class="form-control" placeholder="America/Sao_Paulo" {{ disabled ? 'disabled' : '' }}>
+          <div class="form-text">Padrão: horário de Brasília.</div>
+        </div>
+        {% endif %}
+        <div>
+          <label for="g4fra_{{ prefix }}password_env" class="form-label">Variável de ambiente da senha</label>
+          <input type="text" name="{{ prefix }}password_env" id="g4fra_{{ prefix }}password_env" value="{{ cfg[prefix ~ 'password_env']|default('') }}" class="form-control" autocomplete="off" spellcheck="false" placeholder="Nome da variável no servidor" {{ disabled ? 'disabled' : '' }}>
+          <div class="form-text">Informe o nome da variável, não a senha. Quando configurada, ela tem prioridade sobre a senha armazenada.</div>
+        </div>
+        <div>
+          <label for="g4fra_{{ prefix }}tls_ca" class="form-label">Arquivo da autoridade certificadora (CA)</label>
+          <input type="text" name="{{ prefix }}tls_ca" id="g4fra_{{ prefix }}tls_ca" value="{{ cfg[prefix ~ 'tls_ca']|default('') }}" class="form-control" autocomplete="off" spellcheck="false" placeholder="/caminho/no/servidor/ca.pem" {{ disabled ? 'disabled' : '' }}>
+          <div class="form-text">Caminho do certificado no servidor GLPI, utilizado na conexão com TLS.</div>
+        </div>
+        <div>
+          <label for="g4fra_{{ prefix }}connect_timeout" class="form-label">Tempo limite para conectar (segundos)</label>
+          <input type="number" name="{{ prefix }}connect_timeout" id="g4fra_{{ prefix }}connect_timeout" value="{{ cfg[prefix ~ 'connect_timeout']|default(5) }}" class="form-control" min="1" max="15" step="1" {{ disabled ? 'disabled' : '' }}>
+        </div>
+        <div>
+          <label for="g4fra_{{ prefix }}read_timeout" class="form-label">Tempo limite de leitura (segundos)</label>
+          <input type="number" name="{{ prefix }}read_timeout" id="g4fra_{{ prefix }}read_timeout" value="{{ cfg[prefix ~ 'read_timeout']|default(5) }}" class="form-control" min="1" max="30" step="1" {{ disabled ? 'disabled' : '' }}>
+        </div>
+      </div>
+    </details>
+
+    <div class="g4fr-help-card mt-3">
+      <strong>Salve as configurações antes de testar.</strong> O teste utiliza os dados já salvos e verifica a conexão e o acesso às tabelas necessárias.
+    </div>
+    <div class="mt-3 g4fr-actions">
+      <button type="button" class="btn btn-secondary btn-sm" data-db-test {{ disabled ? 'disabled' : '' }}>Testar conexão {{ connection.source == 'glpi' ? 'GLPI / MariaDB' : 'Callcenter / MySQL' }}</button>
+      <span class="g4fr-pill" data-db-pill data-state="unknown">Não testada</span>
+      <span class="g4fr-muted" data-db-status role="status" aria-live="polite"></span>
+    </div>
+    <div class="mt-2" data-db-result hidden></div>
+  </div>
+{% endfor %}

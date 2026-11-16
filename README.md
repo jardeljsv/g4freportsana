@@ -1,6 +1,12 @@
-# Relatórios G4F ANA 2.0.5
+# Relatórios G4F ANA 2.0.6
 
 Fork independente do G4F Reports 1.8.19 para o Contrato ANA 006/2025, compatível com GLPI 11 e 12, com revisão direcionada ao GLPI 12.0.1. O diretório, as classes, as configurações e os rascunhos são próprios do plugin `g4freportsana`. A instalação original `g4freports` permanece independente.
+
+## Atualização para 2.0.6
+
+A classificação contratual usa a prioridade final gravada no chamado GLPI: prioridades 1/2 correspondem a P3, 3 a P2 e 4/5/6 a P1. Exceções por chamado, VIPs e mapeamentos administrativos explícitos continuam prevalecendo. A alteração corrige a situação em que uma regra atribui prioridade baixa ao chamado, mas urgência e impacto permanecem médios. Gere nova extração para recalcular os IPS3/IPS4 e o limite de 70%; registros já exportados não são modificados. A metodologia continua provisória até sua aprovação administrativa. A versão de regras é `ana-2026-11-16-v4`.
+
+O repositório público não inclui a antiga base de testes derivada de registros reais de produção da ANA nem os quatro testes que dependiam dela. Os testes sintéticos independentes, incluindo a regressão da prioridade baixa com impacto e urgência médios, permanecem publicados. A bateria de integração com dados históricos só deve ser executada em ambiente controlado com base de testes autorizada.
 
 O módulo mensal reúne os dez IPS, composição financeira por serviços da OS, telefonia das filas exatas `ana` e `ana-transbordo`, evidências e exportações Word, Excel e JSON. O relatório de atividades por profissional da base original continua disponível pelo botão correspondente.
 
@@ -71,7 +77,7 @@ As configurações e decisões administrativas são gravadas pelo próprio GLPI,
 | IPS1 | Média das notas válidas de 1 a 5; pesquisas não respondidas não recebem zero. Corte das respostas explicitado. |
 | IPS2 | Percentual com início de tratamento em até cinco minutos, meta de 98%. |
 | IPS3 e IPS4 | Incidentes e requisições separados por P1/P2/P3, meta de 90% para cada prioridade. Não há média entre prioridades. |
-| Prioridades | Matriz contratual de impacto/urgência; mapeamento alternativo ou exceção exige registro administrativo. Excesso sobre o limite de P1/P2 não causa reclassificação arbitrária de chamados. |
+| Prioridades | Prioridade final do GLPI com correspondência ANA 1/2=P3, 3=P2, 4/5/6=P1; exceções documentadas, VIP e mapeamento administrativo explícito prevalecem. Excesso sobre o limite de P1/P2 não causa reclassificação arbitrária de chamados. |
 | Tempos | Referência nativa GLPI preserva zero. O relógio contratual usa eventos, continuidade entre equipes, calendário e suspensões aprovadas. Pendências, filas externas ou contadores nativos não autorizam desconto automático de tempo. |
 | IPS5 | Chamados distintos com solução e sem reabertura; eventos são mantidos separadamente. Não existe dispensa por reabertura pelo mesmo técnico. |
 | IPS6 | Chamadas atendidas sobre encaminhadas, meta de 99%. Interações são vinculadas pelo mesmo identificador de chamada; passagens por fila e contexto entre meses permanecem disponíveis. Identificadores diferentes não são unidos por suposição. |

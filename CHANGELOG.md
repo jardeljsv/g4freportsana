@@ -57,3 +57,11 @@
 - Permissão contratual explícita, parâmetros de escopo administrativos e proteção dos rascunhos por proprietário.
 - Consultas preparadas somente leitura, com limites de volume e execução por sessão.
 - Testes com dados sanitizados das extrações fornecidas e verificação estrutural e visual dos arquivos exportados.
+## 2.0.6 — 2026-11-16
+
+- Corrige a prioridade contratual para usar a prioridade final do chamado no GLPI, incluindo atribuições por regras de negócio: 1/2=P3, 3=P2 e 4/5/6=P1.
+- Preserva exceções por chamado, VIP e mapeamentos administrativos explícitos, que têm precedência sobre a correspondência padrão.
+- Mantém a apuração como provisória até confirmação administrativa da metodologia e exige nova extração para refletir a correção em IPS3, IPS4 e no limite de 70%.
+- Adiciona regressão para prioridade baixa no GLPI com urgência e impacto médios.
+- Exclui da distribuição pública a base de testes derivada de produção e os testes de reprodução histórica dependentes dela; mantém testes sintéticos independentes.
+
