@@ -81,7 +81,7 @@ final class OfficePackage
 
     public static function status(array $metric): string
     {
-        return ['met' => 'Meta atingida', 'unmet' => 'Meta não atingida', 'pending' => 'Pendente de informação', 'not_applicable' => 'Não aplicável', 'provisional' => 'Apuração provisória', 'no_occurrences' => 'Sem ocorrências'][$metric['status'] ?? 'pending'] ?? 'Pendente de informação';
+        return ['met' => 'Meta atingida', 'unmet' => 'Meta não atingida', 'pending' => 'Pendente de informação', 'not_applicable' => 'Não aplicável', 'provisional' => 'Apurado', 'no_occurrences' => 'Sem ocorrências'][$metric['status'] ?? 'pending'] ?? 'Pendente de informação';
     }
 
     /** Typed presentation: a score is never multiplied by 100 or shown as a percentage. */

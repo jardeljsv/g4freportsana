@@ -5,7 +5,7 @@ namespace GlpiPlugin\G4freportsana\Ana;
 /** Validated input and durable, administrator-owned ANA methodology. */
 final class Settings
 {
-    public const RULES_VERSION = 'ana-2026-11-16-v4';
+    public const RULES_VERSION = 'ana-2026-11-24-v5';
     public const METHOD_CONFIG_KEY = 'ana_methodology_json';
 
     public static function defaults(): array

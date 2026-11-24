@@ -74,6 +74,7 @@ final class DocxExporter
                 ['Ligações atendidas', isset($totals['calls_answered']) ? OfficePackage::number($totals['calls_answered']) : 'Não apurado'],
                 ['Ligações abandonadas', isset($totals['calls_abandoned']) ? OfficePackage::number($totals['calls_abandoned']) : 'Não apurado'],
             ];
+            if (!empty($totals['calls_short_unanswered_excluded'])) $phoneRows[] = ['Não atendidas/abandonadas excluídas (até 4 segundos)', OfficePackage::number($totals['calls_short_unanswered_excluded'])];
             if (isset($totals['calls_desisted'])) $phoneRows[] = ['Desistências (espera inferior a 30 segundos)', OfficePackage::number($totals['calls_desisted'])];
             if (!empty($totals['calls_abandon_wait_unknown'])) $phoneRows[] = ['Abandonos sem tempo de espera apurado', OfficePackage::number($totals['calls_abandon_wait_unknown'])];
             $phoneRows[] = ['Tempo médio de atendimento', OfficePackage::duration($totals['mean_talk_seconds'] ?? null)];

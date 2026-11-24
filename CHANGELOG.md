@@ -1,3 +1,11 @@
+## 2.0.7 — 2026-11-24
+
+- Exclui do cálculo de telefonia e IPS6 as ligações não atendidas/abandonadas com espera conhecida de 0 a 4 segundos, inclusive; aguarda a consolidação entre filas antes do filtro.
+- Preserva chamadas excluídas e o motivo na auditoria JSON e na planilha Excel; adiciona total de exclusões ao resumo Word/Excel.
+- Chamadas atendidas rapidamente e chamadas sem tempo de espera conhecido não são excluídas automaticamente.
+- A apresentação nos arquivos Word e Excel passa de "Apuração provisória" a "Apurado"; estados internos de evidência e validação permanecem inalterados.
+- Mantém conexões existentes, API, escopo, prioridades e metodologia da versão 2.0.6.
+
 ## 2.0.5 — 2026-11-04
 
 - Opção administrativa para incluir ou excluir desistências com espera inferior a 30 segundos do IPS6; inclusão mantida como padrão.

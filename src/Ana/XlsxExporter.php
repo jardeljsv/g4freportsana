@@ -78,6 +78,7 @@ final class XlsxExporter
         $this->merged($sheet, $row++, 'Síntese operacional', 2);
         $totals = OfficePackage::phoneTotals($this->snapshot);
         $totalLabels = ['tickets' => 'Chamados incluídos', 'incidents' => 'Incidentes', 'requests' => 'Requisições', 'scope_review' => 'Escopo em revisão', 'calls_received' => 'Ligações recebidas', 'calls_answered' => 'Ligações atendidas', 'calls_abandoned' => 'Ligações abandonadas'];
+        if (!empty($totals['calls_short_unanswered_excluded'])) $totalLabels['calls_short_unanswered_excluded'] = 'Não atendidas/abandonadas excluídas (até 4 segundos)';
         if (isset($totals['calls_desisted'])) $totalLabels['calls_desisted'] = 'Desistências (espera inferior a 30 segundos)';
         if (!empty($totals['calls_abandon_wait_unknown'])) $totalLabels['calls_abandon_wait_unknown'] = 'Abandonos sem tempo de espera apurado';
         foreach ($totalLabels as $key => $label) {
@@ -310,7 +311,7 @@ final class XlsxExporter
         $spec = ['id' => 'Registro ID', 'call_key' => 'Chave de contagem', 'interaction_id' => 'Interação ID', 'callid' => 'Call ID', 'leg_id' => 'Passagem ID', 'queue' => 'Fila', 'agent' => 'Agente', 'caller' => 'Origem', 'entered_at' => 'Entrada local', 'answered_at' => 'Atendimento local', 'ended_at' => 'Fim local', 'wait_seconds' => 'Espera (s)', 'talk_seconds' => 'Conversação (s)', 'answered' => 'Atendida', 'abandoned' => 'Abandonada', 'unknown_outcome' => 'Desfecho desconhecido', 'transferred' => 'Transferida', 'overflow' => 'Transbordo', 'linkedid' => 'Linked ID', 'leg_ids' => 'Passagens vinculadas', 'leg_count' => 'Quantidade de passagens', 'linkage_basis' => 'Critério de vínculo', 'linkage_uncertain' => 'Vínculo incerto', 'outcome' => 'Desfecho', 'inclusion_reason' => 'Critério de inclusão', 'exclusion_reason' => 'Motivo da exclusão', 'entered_epoch' => 'Entrada epoch UTC',
             'in_period' => 'Entrada da passagem no mês', 'context_only' => 'Passagem de contexto', 'wait_basis' => 'Critério da espera', 'talk_basis' => 'Critério da conversação', 'event_ids' => 'IDs dos eventos', 'entry_event_id' => 'Evento de entrada ID', 'source_time_type' => 'Tipo temporal da origem', 'source_timezone' => 'Fuso da origem',
             'abandon_recorded' => 'Abandono registrado', 'desisted' => 'Desistência (espera inferior a 30 segundos)', 'abandon_wait_unknown' => 'Abandono sem espera apurada',
-            'ips6_included' => 'Elegível nas filas para IPS6', 'ips6_exclusion_reason' => 'Motivo de inelegibilidade nas filas'];
+            'short_unanswered_excluded' => 'Excluída por espera até 4 segundos', 'ips6_included' => 'Elegível nas filas para IPS6', 'ips6_exclusion_reason' => 'Motivo de inelegibilidade nas filas'];
         return $this->fieldSheet($name, $name, $calls, $spec);
     }
 

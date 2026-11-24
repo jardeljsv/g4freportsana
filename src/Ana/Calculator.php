@@ -104,6 +104,7 @@ final class Calculator
         $metrics[]=$m;
         [$calls,$legs,$excludedCalls,$phoneIssues]=self::calls($input,$data['calls']??[]);
         $warnings=array_merge($warnings,$phoneIssues);
+        $shortExcluded = array_values(array_filter($excludedCalls, static fn($c) => !empty($c['short_unanswered_excluded'])));
         $includeDesistencias=$input['ips6_include_desistencias']??true;
         $eligibleCalls=array_values(array_filter($calls,static fn($c)=>$c['ips6_included']));
         $callDen=array_column($eligibleCalls,'call_key'); $answered=array_column(array_filter($eligibleCalls,static fn($c)=>!empty($c['answered'])),'call_key');
@@ -120,9 +121,11 @@ final class Calculator
         $m=self::ratio(self::base('IPS6','percent_ratio',99),count($answered),count($callDen),$answered,$callDen,$unknownCalls,count($callDen),true);
         $m['evaluated_count']=count($callDen)-count($unknownCalls);
         $m['coverage_percent']=$m['cohort_count']>0?100*$m['evaluated_count']/$m['cohort_count']:null;
+        $m['short_unanswered_excluded_count'] = count($shortExcluded);
+        $m['short_unanswered_excluded_ids'] = array_column($shortExcluded, 'call_key');
         $m['desistencias_included']=(bool)$includeDesistencias;
         $m['excluded_ids']=$excludedDesistencias;$m['excluded_count']=count($excludedDesistencias);
-        $m['method']='Atendidas ÷ recebidas nas filas exatas ANA × 100; unidade '.(($input['call_unit']??'interaction')==='queue_leg'?'entrada individual na fila':'ligação consolidada por identificador').'.';
+        $m['method']='Atendidas ÷ recebidas nas filas exatas ANA × 100; exclui ligações não atendidas/abandonadas com espera comprovada de até 4 segundos; unidade '.(($input['call_unit']??'interaction')==='queue_leg'?'entrada individual na fila':'ligação consolidada por identificador').'.';
         if(!$includeDesistencias)$m['method'].=' Desistências com espera inferior a 30 segundos excluídas do denominador.';
         $m['note']='Totais das filas sem conciliação com os encaminhamentos da rede.';
         $m['queue_observed']=['available'=>$phoneAvailable,'received'=>$phoneAvailable?count($calls):null,'answered'=>$phoneAvailable?count($answered):null,'unknown'=>$phoneAvailable?count($unknownCalls):null];
@@ -164,7 +167,7 @@ final class Calculator
             'calls_received'=>$phoneAvailable?count($calls):null,'calls_answered'=>$phoneAvailable?count($answered):null,'calls_abandoned'=>$phoneAvailable?count(array_filter($calls,static fn($c)=>!empty($c['abandoned']))):null,
             'calls_desisted'=>$phoneAvailable?count(array_filter($calls,static fn($c)=>!empty($c['desisted']))):null,
             'calls_abandon_wait_unknown'=>$phoneAvailable?count(array_filter($calls,static fn($c)=>!empty($c['abandon_wait_unknown']))):null,
-            'calls_available'=>$phoneAvailable, 'calls_network_forwarded'=>$netValid?(int)$phoneEvidence['forwarded_calls']:null,
+            'calls_available'=>$phoneAvailable, 'calls_short_unanswered_excluded'=>$phoneAvailable?count($shortExcluded):null, 'calls_network_forwarded'=>$netValid?(int)$phoneEvidence['forwarded_calls']:null,
             'calls_network_answered'=>$netValid?(int)$phoneEvidence['answered_calls']:null,
             'mean_talk_seconds'=>$phoneAvailable?self::meanField(array_filter($calls,static fn($c)=>!empty($c['answered'])),'talk_seconds'):null,
             'mean_wait_seconds'=>$phoneAvailable?self::meanField(array_filter($calls,static fn($c)=>!empty($c['answered'])),'wait_seconds'):null];
@@ -294,6 +297,17 @@ final class Calculator
             // queue visit does not make a longer interaction a desistência.
             unset($c['desisted'],$c['abandoned'],$c['abandon_wait_unknown']);
             $c=PhoneData::classifyAbandonment($c);
+            // Evaluate after all queue legs are consolidated. Unknown wait is
+            // not zero; an answered call is never removed by this cutoff.
+            $shortWait = !$c['answered'] && $c['wait_seconds'] !== null && $c['wait_seconds'] <= 4;
+            if ($shortWait) {
+                $c['short_unanswered_excluded'] = true;
+                $c['ips6_included'] = false;
+                $c['ips6_exclusion_reason'] = 'Ligação não atendida/abandonada com espera de até 4 segundos.';
+                $c['excluded_reason'] = $c['ips6_exclusion_reason'];
+                $excluded[] = $c;
+                continue;
+            }
             $c['ips6_included']=($input['ips6_include_desistencias']??true)||!$c['desisted'];
             $c['ips6_exclusion_reason']=$c['ips6_included']?'':'Desistência com espera inferior a 30 segundos.';
             $talk=array_filter(array_column($answeredRows,'talk_seconds'),static fn($v)=>SlaEvaluator::seconds($v)!==null);
