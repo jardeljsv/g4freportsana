@@ -3,7 +3,7 @@
 
 // GLPI reads this file for discovery before initializing the plugin. Keep
 // metadata independent of the host runtime, class inheritance and autoloaders.
-if (!defined('PLUGIN_G4FREPORTSANA_VERSION')) { define('PLUGIN_G4FREPORTSANA_VERSION', '2.0.7'); }
+if (!defined('PLUGIN_G4FREPORTSANA_VERSION')) { define('PLUGIN_G4FREPORTSANA_VERSION', '2.0.8'); }
 if (!defined('PLUGIN_G4FREPORTSANA_MIN_GLPI')) { define('PLUGIN_G4FREPORTSANA_MIN_GLPI', '11.0.0'); }
 if (!defined('PLUGIN_G4FREPORTSANA_MAX_GLPI')) { define('PLUGIN_G4FREPORTSANA_MAX_GLPI', '13.0.0'); }
 

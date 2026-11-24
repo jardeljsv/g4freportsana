@@ -8,6 +8,7 @@ final class DocxExporter
     private const VIOLATION_TEXT = '9C1C1C';
 
     private WordChart $charts;
+    private array $tocEntries = [];
 
     public function filename(array $snapshot): string
     {
@@ -29,6 +30,7 @@ final class DocxExporter
         $files['word/document.xml'] = $this->document($snapshot);
         $this->charts->attach($files);
         $files['word/styles.xml'] = $this->styles();
+        $files['word/settings.xml'] = $this->updateFieldSettings($files['word/settings.xml'] ?? null);
         // Inline header/footer crops of the unchanged supplied artwork repeat on
         // automatically continued pages in both Word and LibreOffice. Full-page
         // floating header drawings do not reliably repeat in all Office renderers.
@@ -41,6 +43,7 @@ final class DocxExporter
 
     private function document(array $s): string
     {
+        $this->tocEntries = [];
         $input = $s['input'] ?? [];
         $totals = OfficePackage::phoneTotals($s);
         $narrative = OfficePackage::narrativeTexts($s);
@@ -53,6 +56,8 @@ final class DocxExporter
         $body .= $this->p($this->periodLabel($s), '', false, 26, 'center');
         $body .= $this->p('Serviços de operação de infraestrutura e atendimento a usuários de TIC', '', false, 22, 'center');
         $body .= $this->p('G4F Soluções Corporativas Ltda.', '', false, 22, 'center');
+        $body .= $this->page();
+        $body .= '<!-- G4F_ANA_TOC -->';
         $body .= $this->page();
         $body .= $this->heading('1 Apresentação e composição financeira');
         $body .= $this->p('Relatório dos serviços de TIC, dos indicadores de prestação de serviços e da medição financeira do Contrato nº 006/2025, referente a ' . $this->periodLabel($s) . '.');
@@ -175,6 +180,7 @@ final class DocxExporter
         $body .= $this->keepWithNext($this->p('Responsável pela elaboração: ____________________________________'));
         $body .= $this->keepWithNext($this->p('Responsável pela validação: _____________________________________'));
         $body .= $this->p('Data: ____/____/________');
+        $body = str_replace('<!-- G4F_ANA_TOC -->', $this->toc(), $body);
         $section = '<w:sectPr><w:headerReference w:type="even" r:id="rId12"/><w:headerReference w:type="default" r:id="rId12"/><w:footerReference w:type="default" r:id="rId13"/><w:footerReference w:type="even" r:id="rId13"/><w:footerReference w:type="first" r:id="rId13"/><w:headerReference w:type="first" r:id="rId12"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1660" w:right="1134" w:bottom="2000" w:left="1134" w:header="480" w:footer="500"/><w:cols w:space="708"/></w:sectPr>';
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart"><w:body>' . $body . $section . '</w:body></w:document>';
     }
@@ -318,7 +324,55 @@ final class DocxExporter
 
     private function heading(string $text, int $level = 1): string
     {
-        return $this->p($text, 'Heading' . $level, true, $level === 1 ? 28 : 23, 'left');
+        // Each real chapter becomes a bookmark. The TOC is generated from this
+        // exact list, so optional sections cannot be listed if they were omitted.
+        $index = count($this->tocEntries) + 1;
+        $bookmark = 'G4F_ANA_TOC_' . $index;
+        $this->tocEntries[] = ['level' => $level, 'title' => $text, 'bookmark' => $bookmark, 'id' => $index];
+        $paragraph = $this->p($text, 'Heading' . $level, true, $level === 1 ? 28 : 23, 'left');
+        $paragraph = preg_replace('~</w:pPr>~', '</w:pPr><w:bookmarkStart w:id="' . $index . '" w:name="' . $bookmark . '"/>', $paragraph, 1);
+        return substr($paragraph, 0, -6) . '<w:bookmarkEnd w:id="' . $index . '"/></w:p>';
+    }
+
+    /** A Word-native TOC field with a readable cached outline and PAGEREF fields. */
+    private function toc(): string
+    {
+        $xml = $this->p('SUMÁRIO', 'Title', true, 32, 'center');
+        $xml .= '<w:p><w:pPr><w:spacing w:after="80"/></w:pPr>'
+            . '<w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/></w:r>'
+            . '<w:r><w:instrText xml:space="preserve"> TOC \o "1-2" \h \z \u </w:instrText></w:r>'
+            . '<w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>';
+        foreach ($this->tocEntries as $entry) {
+            $level = (int)$entry['level'];
+            $bookmark = $entry['bookmark'];
+            $xml .= '<w:p><w:pPr><w:pStyle w:val="TOC' . $level . '"/>'
+                . '<w:tabs><w:tab w:val="right" w:leader="dot" w:pos="9500"/></w:tabs>'
+                . '<w:ind w:left="' . ($level === 1 ? '0' : '320') . '"/>'
+                . '<w:spacing w:before="0" w:after="0" w:line="230" w:lineRule="auto"/>'
+                . '</w:pPr><w:hyperlink w:anchor="' . $bookmark . '" w:history="1">'
+                . '<w:r><w:t xml:space="preserve">' . OfficePackage::xml($entry['title']) . '</w:t></w:r>'
+                . '</w:hyperlink><w:r><w:tab/></w:r>'
+                . '<w:r><w:fldChar w:fldCharType="begin"/></w:r>'
+                . '<w:r><w:instrText xml:space="preserve"> PAGEREF ' . $bookmark . ' \h </w:instrText></w:r>'
+                . '<w:r><w:fldChar w:fldCharType="separate"/></w:r>'
+                . '<w:r><w:t>—</w:t></w:r>'
+                . '<w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>';
+        }
+        return $xml . '<w:p><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>';
+    }
+
+    /** Let Word refresh TOC and page fields when the exported document is opened. */
+    private function updateFieldSettings(?string $xml): string
+    {
+        if (!is_string($xml) || strpos($xml, '<w:settings') === false) {
+            return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                . '<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+                . '<w:updateFields w:val="true"/></w:settings>';
+        }
+        if (preg_match('~<w:updateFields\b[^>]*/>~', $xml)) {
+            return preg_replace('~<w:updateFields\b[^>]*/>~', '<w:updateFields w:val="true"/>', $xml, 1);
+        }
+        return str_replace('</w:settings>', '<w:updateFields w:val="true"/></w:settings>', $xml);
     }
 
     private function p(string $text, string $style = '', bool $bold = false, int $size = 21, string $align = 'both', string $color = ReportStyle::NAVY): string
@@ -361,6 +415,6 @@ final class DocxExporter
 
     private function styles(): string
     {
-        return '<?xml version="1.0" encoding="UTF-8"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="21"/><w:lang w:val="pt-BR"/></w:rPr></w:rPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:rPr><w:b/><w:color w:val="' . ReportStyle::NAVY . '"/><w:sz w:val="40"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="180"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:color w:val="' . ReportStyle::NAVY . '"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="140"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:color w:val="' . ReportStyle::NAVY . '"/></w:rPr></w:style></w:styles>';
+        return '<?xml version="1.0" encoding="UTF-8"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="21"/><w:lang w:val="pt-BR"/></w:rPr></w:rPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:rPr><w:b/><w:color w:val="' . ReportStyle::NAVY . '"/><w:sz w:val="40"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="180"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:color w:val="' . ReportStyle::NAVY . '"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="140"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:color w:val="' . ReportStyle::NAVY . '"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="TOC1"><w:name w:val="toc 1"/><w:basedOn w:val="Normal"/><w:rPr><w:b/><w:sz w:val="20"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="TOC2"><w:name w:val="toc 2"/><w:basedOn w:val="Normal"/><w:rPr><w:sz w:val="19"/></w:rPr></w:style></w:styles>';
     }
 }

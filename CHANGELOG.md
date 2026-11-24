@@ -1,3 +1,10 @@
+## 2.0.8 — 2026-11-24
+
+- Acrescenta na segunda página do Word um sumário automático nativo (campo TOC) com dois níveis e pontilhado.
+- Gera entradas a partir dos títulos reais e mantém referências de páginas e links para cada capítulo.
+- Solicita a atualização de campos no Microsoft Word ao abrir o documento; números de página dependem da paginação do editor.
+- Preserva modelo timbrado, métricas, anexos, configurações e filtros de telefonia da v2.0.7.
+
 ## 2.0.7 — 2026-11-24
 
 - Exclui do cálculo de telefonia e IPS6 as ligações não atendidas/abandonadas com espera conhecida de 0 a 4 segundos, inclusive; aguarda a consolidação entre filas antes do filtro.
